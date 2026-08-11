@@ -53,11 +53,6 @@
             <version>${system.documentgenerator.client.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.material</groupId>
-            <artifactId>material-client</artifactId>
-            <version>${material.version}</version>
-        </dependency>
-        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>file-service-persistence</artifactId>
         </dependency>
