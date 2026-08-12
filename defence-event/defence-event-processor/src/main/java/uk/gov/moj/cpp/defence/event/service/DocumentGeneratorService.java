@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.defence.event.service;
 
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
-import static javax.transaction.Transactional.TxType.REQUIRES_NEW;
+import static jakarta.transaction.Transactional.TxType.REQUIRES_NEW;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ import uk.gov.moj.cpp.defence.event.exception.FileUploadException;
 import uk.gov.moj.cpp.defence.event.exception.OpaDocumentGenerationException;
 import uk.gov.moj.cpp.defence.event.exception.UserNotFoundException;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

@@ -12,8 +12,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.defence.aggregate.DefenceAssociation;
 import uk.gov.moj.cpp.defence.service.UserGroupService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import java.util.UUID;
 import java.util.stream.Stream;
 

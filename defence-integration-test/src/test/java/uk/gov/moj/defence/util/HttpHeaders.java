@@ -2,7 +2,7 @@ package uk.gov.moj.defence.util;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 

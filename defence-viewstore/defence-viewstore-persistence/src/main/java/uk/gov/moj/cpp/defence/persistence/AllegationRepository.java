@@ -5,18 +5,29 @@ import uk.gov.moj.cpp.defence.persistence.entity.Allegation;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface AllegationRepository extends EntityRepository<Allegation, UUID> {
+@ApplicationScoped
+public class AllegationRepository extends AbstractDefenceRepository<Allegation, UUID> {
 
-    @Query(value = "FROM Allegation alg WHERE alg.defenceClient = :defenceClientId AND alg.defenceClient IN (SELECT dc.id FROM DefenceClient dc WHERE dc.id = :defenceClientId AND dc.visible = true)")
-    List<Allegation> findAllegationByCriteria(@QueryParam("defenceClientId") final UUID defenceClientId);
+    public AllegationRepository() {
+        super(Allegation.class);
+    }
 
-    @Query(value = "FROM Allegation alg WHERE alg.defenceClientId = :defenceClientId AND alg.offenceId = :offenceId")
-    Allegation findAllegationByDefenceClientIdAndOffenceId(@QueryParam("defenceClientId") final UUID defenceClientId, @QueryParam("offenceId") final UUID offenceId);
+    public List<Allegation> findAllegationByCriteria(final UUID defenceClientId) {
+        return entityManager.createQuery(
+                        "SELECT alg FROM Allegation alg WHERE alg.defenceClientId = :defenceClientId AND alg.defenceClientId IN (SELECT dc.id FROM DefenceClient dc WHERE dc.id = :defenceClientId AND dc.visible = true)",
+                        Allegation.class)
+                .setParameter("defenceClientId", defenceClientId)
+                .getResultList();
+    }
 
+    public Allegation findAllegationByDefenceClientIdAndOffenceId(final UUID defenceClientId, final UUID offenceId) {
+        return entityManager.createQuery(
+                        "SELECT alg FROM Allegation alg WHERE alg.defenceClientId = :defenceClientId AND alg.offenceId = :offenceId",
+                        Allegation.class)
+                .setParameter("defenceClientId", defenceClientId)
+                .setParameter("offenceId", offenceId)
+                .getResultStream().findFirst().orElse(null);
+    }
 }

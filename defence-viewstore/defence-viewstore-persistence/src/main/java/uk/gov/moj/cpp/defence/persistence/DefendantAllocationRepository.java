@@ -5,17 +5,20 @@ import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocation;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface DefendantAllocationRepository extends EntityRepository<DefendantAllocation, UUID> {
+@ApplicationScoped
+public class DefendantAllocationRepository extends AbstractDefenceRepository<DefendantAllocation, UUID> {
 
+    public DefendantAllocationRepository() {
+        super(DefendantAllocation.class);
+    }
 
-    @Query(value = " from DefendantAllocation p where p.defendantId in (select dc.defendantId from DefenceClient dc where dc.caseId =:caseId)")
-    List<DefendantAllocation> findDefendantAllocationByCaseId(@QueryParam("caseId") final UUID caseId);
-
-
+    public List<DefendantAllocation> findDefendantAllocationByCaseId(final UUID caseId) {
+        return entityManager.createQuery(
+                        "SELECT p FROM DefendantAllocation p WHERE p.defendantId IN (SELECT dc.defendantId FROM DefenceClient dc WHERE dc.caseId = :caseId)",
+                        DefendantAllocation.class)
+                .setParameter("caseId", caseId)
+                .getResultList();
+    }
 }

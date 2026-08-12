@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.defence.events.CasesAssignedToAdvocate;
 import uk.gov.moj.cpp.defence.events.CasesAssignedToOrganisation;
 import uk.gov.moj.cpp.defence.event.service.AdvocateAccessScheduledService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -3,30 +3,37 @@ package uk.gov.moj.cpp.defence.persistence;
 import static java.time.LocalDate.now;
 import static java.time.LocalDate.of;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 import uk.gov.moj.cpp.defence.persistence.entity.IdpcDetails;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+public class IdpcDetailsRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class IdpcDetailsRepositoryIT extends BaseTransactionalJunit4Test {
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    IdpcDetailsRepository idpcRepository;
+    private IdpcDetailsRepository idpcRepository;
 
-    @Inject
-    DefenceClientRepository defenceClientRepository;
+    private DefenceClientRepository defenceClientRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        idpcRepository = new IdpcDetailsRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(idpcRepository);
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+    }
 
     @Test
     public void findIdpcDetailsForDefenceClientId() {
@@ -42,15 +49,15 @@ public class IdpcDetailsRepositoryIT extends BaseTransactionalJunit4Test {
         expectedIdpcDetails.setPageCount(20);
         expectedIdpcDetails.setPublishedDate(now());
 
-        idpcRepository.save(expectedIdpcDetails);
+        final IdpcDetails savedIdpcDetails = idpcRepository.save(expectedIdpcDetails);
 
-        final IdpcDetails actualIdpcDetails = idpcRepository.findIdpcDetailsForDefenceClient(expectedIdpcDetails.getDefenceClientId());
+        final IdpcDetails actualIdpcDetails = idpcRepository.findIdpcDetailsForDefenceClient(savedIdpcDetails.getDefenceClientId());
 
-        assertEquals(expectedIdpcDetails, actualIdpcDetails);
+        assertEquals(savedIdpcDetails, actualIdpcDetails);
 
-        final IdpcDetails idpcDetailsById = idpcRepository.findBy(expectedIdpcDetails.getId());
+        final IdpcDetails idpcDetailsById = idpcRepository.findBy(savedIdpcDetails.getId());
 
-        assertEquals(expectedIdpcDetails, idpcDetailsById);
+        assertEquals(savedIdpcDetails, idpcDetailsById);
     }
 
     @Test
@@ -75,15 +82,15 @@ public class IdpcDetailsRepositoryIT extends BaseTransactionalJunit4Test {
         expectedIdpcDetails.setPageCount(20);
         expectedIdpcDetails.setPublishedDate(now());
 
-        idpcRepository.save(expectedIdpcDetails);
+        final IdpcDetails savedIdpcDetails = idpcRepository.save(expectedIdpcDetails);
 
         final IdpcDetails actualIdpcDetails = idpcRepository.findIdpcDetailsForDefendantId(defenceClient.getDefendantId());
 
-        assertEquals(expectedIdpcDetails, actualIdpcDetails);
+        assertEquals(savedIdpcDetails, actualIdpcDetails);
 
-        final IdpcDetails idpcDetailsById = idpcRepository.findBy(expectedIdpcDetails.getId());
+        final IdpcDetails idpcDetailsById = idpcRepository.findBy(savedIdpcDetails.getId());
 
-        assertEquals(expectedIdpcDetails, idpcDetailsById);
+        assertEquals(savedIdpcDetails, idpcDetailsById);
     }
 
     @Test

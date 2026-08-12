@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
- http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+ https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd" version="3.0">
 
     <persistence-unit name="defence">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
@@ -15,5 +15,11 @@
         <class>uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocation</class>
         <class>uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocationPlea</class>
         <class>uk.gov.moj.cpp.defence.persistence.entity.ProsecutionAdvocateAccess</class>
+        <properties>
+            <!-- Allow Hibernate's now() HQL function used by AdvocateAccessRepository (carried over from the
+                 original DeltaSpike @Query); Hibernate 7 strict JPA compliance would otherwise reject it with
+                 StrictJpaComplianceViolation. -->
+            <property name="hibernate.jpa.compliance.query" value="false"/>
+        </properties>
     </persistence-unit>
 </persistence>

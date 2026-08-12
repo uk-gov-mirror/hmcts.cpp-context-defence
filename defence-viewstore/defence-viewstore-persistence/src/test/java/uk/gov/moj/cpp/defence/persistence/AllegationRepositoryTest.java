@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.defence.builder.DefenceClientBuilder.createDefenceClient;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.Allegation;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 
@@ -15,30 +15,36 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+public class AllegationRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class AllegationRepositoryIT extends BaseTransactionalJunit4Test {
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    AllegationRepository allegationRepository;
+    private AllegationRepository allegationRepository;
 
-    @Inject
-    DefenceClientRepository defenceClientRepository;
+    private DefenceClientRepository defenceClientRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        allegationRepository = new AllegationRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(allegationRepository);
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+    }
 
     @Test
     public void shouldFindAllegationsByDefenceClientId() {
 
         final DefenceClient defClient = createDefenceClient();
+        defenceClientRepository.saveAndFlush(defClient);
 
-        Allegation allegation = createAllegation(defClient);
-        defClient.getAllegationList().add(allegation);
-        defenceClientRepository.save(defClient);
-        allegationRepository.save(allegation);
+        final Allegation allegation = createAllegation(defClient);
+        allegationRepository.saveAndFlush(allegation);
 
         insertOtherDefenceClientAndAllegationData();
 
@@ -57,11 +63,10 @@ public class AllegationRepositoryIT extends BaseTransactionalJunit4Test {
     public void shouldFindAllegationsByDefenceClientIdAndOffenceId() {
 
         final DefenceClient defClient = createDefenceClient();
+        defenceClientRepository.saveAndFlush(defClient);
 
-        Allegation allegation = createAllegation(defClient);
-        defClient.getAllegationList().add(allegation);
-        defenceClientRepository.save(defClient);
-        allegationRepository.save(allegation);
+        final Allegation allegation = createAllegation(defClient);
+        allegationRepository.saveAndFlush(allegation);
 
         insertOtherDefenceClientAndAllegationData();
 
@@ -77,27 +82,25 @@ public class AllegationRepositoryIT extends BaseTransactionalJunit4Test {
     private void insertOtherDefenceClientAndAllegationData() {
 
         DefenceClient defClient = createDefenceClient();
+        defenceClientRepository.saveAndFlush(defClient);
 
         Set<Allegation> allegationList = new HashSet<>();
         allegationList.add(createAllegation(defClient));
         allegationList.add(createAllegation(defClient));
         allegationList.add(createAllegation(defClient));
-        defClient.setAllegationList(allegationList);
-        defenceClientRepository.save(defClient);
-        allegationList.forEach(a -> {allegationRepository.save(a);});
+        allegationList.forEach(allegationRepository::saveAndFlush);
 
 
 
         defClient = createDefenceClient();
         defClient.setVisible(false);
+        defenceClientRepository.saveAndFlush(defClient);
         allegationList = new HashSet<>();
         allegationList.add(createAllegation(defClient));
         allegationList.add(createAllegation(defClient));
         allegationList.add(createAllegation(defClient));
         allegationList.add(createAllegation(defClient));
-        defClient.setAllegationList(allegationList);
-        defenceClientRepository.save(defClient);
-        allegationList.forEach(a -> {allegationRepository.save(a);});
+        allegationList.forEach(allegationRepository::saveAndFlush);
     }
 
 
@@ -106,10 +109,10 @@ public class AllegationRepositoryIT extends BaseTransactionalJunit4Test {
 
         final DefenceClient defClient = createDefenceClient();
         defClient.setVisible(false);
-        Allegation allegation = createAllegation(defClient);
-        defClient.getAllegationList().add(allegation);
-        defenceClientRepository.save(defClient);
-        allegationRepository.save(allegation);
+        defenceClientRepository.saveAndFlush(defClient);
+
+        final Allegation allegation = createAllegation(defClient);
+        allegationRepository.saveAndFlush(allegation);
 
         insertOtherDefenceClientAndAllegationData();
 

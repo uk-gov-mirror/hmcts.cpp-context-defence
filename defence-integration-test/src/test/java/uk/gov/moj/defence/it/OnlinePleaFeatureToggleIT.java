@@ -4,7 +4,7 @@ import static com.google.common.collect.ImmutableMap.of;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber.stubFeaturesFor;
 import static uk.gov.moj.defence.util.PleaAccessControl.mockDefenceUserPleaAccessControl;
 import static uk.gov.moj.defence.util.ProsecutionCaseQueryStub.stubForProsecutionCaseQuery;
@@ -14,8 +14,8 @@ import static uk.gov.moj.defence.util.UsersGroupStub.stubUsersGroupsPermission;
 import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class OnlinePleaFeatureToggleIT {
     private static final String OPA_ELIGIBLE_URL = "/onlineplea/%s";
@@ -24,7 +24,7 @@ public class OnlinePleaFeatureToggleIT {
     public static final String FEATURE = "OPA";
     public static final String userId = randomUUID().toString();
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         mockDefenceUserPleaAccessControl(userId);
         stubUsersGroupsPermission();

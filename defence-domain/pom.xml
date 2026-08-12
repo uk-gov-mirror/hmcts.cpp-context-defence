@@ -3,7 +3,7 @@
     <parent>
         <artifactId>defence-parent</artifactId>
         <groupId>uk.gov.moj.cpp.defence</groupId>
-        <version>17.104.103-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>defence-domain</artifactId>

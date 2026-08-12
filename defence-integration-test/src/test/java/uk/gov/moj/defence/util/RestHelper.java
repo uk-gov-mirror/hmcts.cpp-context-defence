@@ -1,6 +1,6 @@
 package uk.gov.moj.defence.util;
 
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
@@ -15,8 +15,8 @@ import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import com.google.common.base.Joiner;
 import com.jayway.jsonpath.ReadContext;

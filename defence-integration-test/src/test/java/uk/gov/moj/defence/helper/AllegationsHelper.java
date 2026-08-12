@@ -2,7 +2,7 @@ package uk.gov.moj.defence.helper;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static uk.gov.moj.defence.util.RestHelper.pollForResponse;
 
 import java.util.List;

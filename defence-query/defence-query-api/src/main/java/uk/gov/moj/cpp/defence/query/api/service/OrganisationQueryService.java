@@ -16,8 +16,8 @@ import uk.gov.justice.services.messaging.Metadata;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class OrganisationQueryService {
 

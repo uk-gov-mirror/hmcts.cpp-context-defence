@@ -17,8 +17,8 @@ import uk.gov.moj.cpp.defence.query.hearing.api.Hearings;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

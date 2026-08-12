@@ -7,7 +7,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.defence.query.view.DefenceGrantAccessQueryView;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.QUERY_API)
 public class DefenceGrantAccessQueryApi {

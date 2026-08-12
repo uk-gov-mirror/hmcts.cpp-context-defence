@@ -17,7 +17,7 @@ import uk.gov.justice.services.messaging.Envelope;
 
 import java.time.LocalDate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class DefenceClientCommandApi {

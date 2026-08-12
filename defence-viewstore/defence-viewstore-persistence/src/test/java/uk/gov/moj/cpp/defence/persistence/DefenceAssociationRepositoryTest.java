@@ -5,30 +5,75 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import static java.time.LocalDate.of;
+
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceAssociation;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceAssociationDefendant;
+import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-public class DefenceAssociationRepositoryTest extends BaseTransactionalJunit4Test {
+public class DefenceAssociationRepositoryTest {
 
     private static final String LAA_CONTRACT_NUMBER = "l1";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
+
     private DefenceAssociationRepository defenceAssociationRepository;
 
-    @Inject
     private DefenceAssociationDefendantRepository defenceAssociationDefendantRepository;
+
+    private DefenceClientRepository defenceClientRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        defenceAssociationRepository = new DefenceAssociationRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceAssociationRepository);
+        defenceAssociationDefendantRepository = new DefenceAssociationDefendantRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceAssociationDefendantRepository);
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+    }
+
+    @Test
+    public void shouldFindByOrganisationIdAndCaseId() {
+        final UUID organisationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final DefenceAssociationDefendant defenceAssociationDefendant = new DefenceAssociationDefendant();
+        defenceAssociationDefendant.setDefendantId(defendantId);
+        defenceAssociationDefendantRepository.save(defenceAssociationDefendant);
+
+        final DefenceAssociation defenceAssociation = new DefenceAssociation();
+        defenceAssociation.setId(randomUUID());
+        defenceAssociation.setOrgId(organisationId);
+        defenceAssociation.setDefenceAssociationDefendant(defenceAssociationDefendant);
+        defenceAssociationRepository.save(defenceAssociation);
+
+        final DefenceClient defenceClient = new DefenceClient(randomUUID(), "FIRST", "LAST", caseId, of(1980, 1, 1), defendantId);
+        defenceClientRepository.save(defenceClient);
+
+        final List<DefenceAssociation> result = defenceAssociationRepository.findByOrganisationIdAndCaseId(organisationId, caseId);
+
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getId(), is(defenceAssociation.getId()));
+    }
+
+    @Test
+    public void shouldReturnEmptyOnFindByOrganisationIdAndCaseIdWhenNoMatch() {
+        final List<DefenceAssociation> result = defenceAssociationRepository.findByOrganisationIdAndCaseId(randomUUID(), randomUUID());
+        assertThat(result.size(), is(0));
+    }
 
     @Test
     public void shouldFindDefenceAssociationsByLaaContract() {
@@ -133,8 +178,7 @@ public class DefenceAssociationRepositoryTest extends BaseTransactionalJunit4Tes
         defenceAssociation.setLaaContractNumber(laaContractNumber);
 
         defenceAssociation.setDefenceAssociationDefendant(defenceAssociationDefendant);
-        defenceAssociationRepository.save(defenceAssociation);
-        return defenceAssociation;
+        return defenceAssociationRepository.save(defenceAssociation);
     }
 
     private DefenceAssociation createDefenceAssociation(final UUID userId, final UUID defendantId, final ZonedDateTime startDate, final ZonedDateTime endDate) {

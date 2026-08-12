@@ -4,12 +4,12 @@ import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocationPlea;
 
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface DefendantAllocationPleaRepository extends EntityRepository<DefendantAllocationPlea, UUID> {
+@ApplicationScoped
+public class DefendantAllocationPleaRepository extends AbstractDefenceRepository<DefendantAllocationPlea, UUID> {
 
-
-
+    public DefendantAllocationPleaRepository() {
+        super(DefendantAllocationPlea.class);
+    }
 }

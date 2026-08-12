@@ -9,7 +9,7 @@ import static uk.gov.moj.defence.util.RestHelper.postCommand;
 import java.util.List;
 import java.util.UUID;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
 import org.apache.http.HttpStatus;

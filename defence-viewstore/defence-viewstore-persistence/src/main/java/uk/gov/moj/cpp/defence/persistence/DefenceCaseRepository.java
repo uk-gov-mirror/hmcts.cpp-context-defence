@@ -4,12 +4,18 @@ import uk.gov.moj.cpp.defence.persistence.entity.DefenceCase;
 
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface DefenceCaseRepository extends EntityRepository<DefenceCase, UUID> {
+@ApplicationScoped
+public class DefenceCaseRepository extends AbstractDefenceRepository<DefenceCase, UUID> {
 
-    DefenceCase findOptionalByUrn(String urn);
+    public DefenceCaseRepository() {
+        super(DefenceCase.class);
+    }
 
+    public DefenceCase findOptionalByUrn(final String urn) {
+        return entityManager.createQuery("SELECT dc FROM DefenceCase dc WHERE dc.urn = :urn", DefenceCase.class)
+                .setParameter("urn", urn)
+                .getResultStream().findFirst().orElse(null);
+    }
 }

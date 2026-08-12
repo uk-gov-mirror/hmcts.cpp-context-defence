@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.defence.command.api.service.OrganisationService;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class DefencePleaCommandApi {

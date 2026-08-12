@@ -6,7 +6,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.cps.defence.DefendantDetails;
 import uk.gov.moj.cpp.defence.json.schema.event.DefendantAdded;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class DefendantsAddedConverter {
 

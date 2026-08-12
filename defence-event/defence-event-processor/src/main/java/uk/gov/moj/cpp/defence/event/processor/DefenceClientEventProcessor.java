@@ -22,8 +22,8 @@ import uk.gov.moj.cpp.defence.event.processor.commands.ReceiveDefenceClient;
 import uk.gov.moj.cpp.defence.event.processor.commands.RecordIdpcDetails;
 import uk.gov.moj.cpp.progression.json.schema.event.PublicDefendantIdpcAdded;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefenceClientEventProcessor {

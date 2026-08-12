@@ -66,7 +66,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;

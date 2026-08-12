@@ -4,10 +4,11 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.defence.builder.DefenceClientBuilder.createDefenceClient;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceGrantAccess;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceUserDetails;
@@ -17,20 +18,27 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+public class DefenceGrantAccessRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class DefenceGrantAccessRepositoryIT  extends BaseTransactionalJunit4Test {
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    DefenceGrantAccessRepository defenceGrantAccessRepository;
+    private DefenceGrantAccessRepository defenceGrantAccessRepository;
 
-    @Inject
-    DefenceClientRepository defenceClientRepository;
+    private DefenceClientRepository defenceClientRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        defenceGrantAccessRepository = new DefenceGrantAccessRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceGrantAccessRepository);
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+    }
 
     @Test
     public void shouldFindByDefenceGrantAccessId() {
@@ -129,6 +137,39 @@ public class DefenceGrantAccessRepositoryIT  extends BaseTransactionalJunit4Test
         assertThat(defenceGrantAccessResults.get(0).getGranteeDefenceUserDetails().getUserId(), is(defenceGrantAccess.getGranteeDefenceUserDetails().getUserId()));
         assertThat(defenceGrantAccessResults.get(0).getGrantorDefenceUserDetails().getUserId(), is(defenceGrantAccess.getGrantorDefenceUserDetails().getUserId()));
         assertThat(defenceGrantAccessResults.get(0).getGranteeOrganisationDetails().getOrganisationId(), is(defenceGrantAccess.getGranteeOrganisationDetails().getOrganisationId()));
+    }
+
+    @Test
+    public void shouldFindByDefenceClientAndUserId() {
+
+        final DefenceClient defClient = createDefenceClient();
+        defenceClientRepository.save(defClient);
+
+        final UUID granteeUserId = randomUUID();
+        final UUID grantorUserId = randomUUID();
+        final UUID organisationId = randomUUID();
+
+        final DefenceGrantAccess defenceGrantAccess = getDefenceGrantAccess(defClient, granteeUserId, grantorUserId, organisationId, false);
+        defenceGrantAccessRepository.save(defenceGrantAccess);
+
+        final DefenceGrantAccess otherGrantAccess = getDefenceGrantAccess(defClient, randomUUID(), grantorUserId, organisationId, false);
+        defenceGrantAccessRepository.save(otherGrantAccess);
+
+        final DefenceGrantAccess result = defenceGrantAccessRepository.findByDefenceClient(defClient.getId(), granteeUserId);
+
+        assertThat(result, notNullValue());
+        assertThat(result.getId(), is(defenceGrantAccess.getId()));
+        assertThat(result.getGranteeDefenceUserDetails().getUserId(), is(granteeUserId));
+    }
+
+    @Test
+    public void shouldReturnNullOnFindByDefenceClientAndUserIdWhenNoMatch() {
+        final DefenceClient defClient = createDefenceClient();
+        defenceClientRepository.save(defClient);
+
+        final DefenceGrantAccess result = defenceGrantAccessRepository.findByDefenceClient(defClient.getId(), randomUUID());
+
+        assertThat(result, is(nullValue()));
     }
 
     private DefenceGrantAccess getDefenceGrantAccess(final DefenceClient defClient, final UUID granteeUserId, final UUID grantorUserId, final UUID organisationId, final boolean remove) {

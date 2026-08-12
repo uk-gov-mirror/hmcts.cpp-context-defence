@@ -14,8 +14,8 @@ import uk.gov.moj.cpp.defence.persistence.OrganisationAccessRepository;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationAccess;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationCaseKey;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionOrganisationAccessEventListener {

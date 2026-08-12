@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 import uk.gov.moj.cpp.defence.persistence.entity.IdpcDetails;
 import uk.gov.moj.cpp.defence.persistence.entity.Instruction;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -49,7 +49,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.deltaspike.core.util.ArraysUtils.asSet;
+import java.util.HashSet;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -162,7 +162,7 @@ public class DefenceQueryServiceTest {
         defenceClient.setLastAssociatedOrganisation(lastOrganisation);
         defenceClient.setInstructionHistory(singletonList(getInstruction(organisationId.toString(), defenceClient)));
         defenceClient.setCaseId(caseId);
-        defenceClient.setAllegationList(asSet(allegation));
+        defenceClient.setAllegationList(new HashSet<>(asList(allegation)));
         when(defenceClientRepository.findBy(defenceClientId)).thenReturn(defenceClient);
 
         //When

@@ -5,25 +5,48 @@ import uk.gov.moj.cpp.defence.persistence.entity.IdpcAccess;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface IdpcAccessHistoryRepository extends EntityRepository<IdpcAccess, UUID> {
+@ApplicationScoped
+public class IdpcAccessHistoryRepository extends AbstractDefenceRepository<IdpcAccess, UUID> {
 
-    @Query(value = "FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId")
-    List<IdpcAccess> findIdpcAccessByCriteria(@QueryParam("defenceClientId") final UUID defenceClientId);
+    private static final String DEFENCE_CLIENT_ID = "defenceClientId";
 
-    @Query(value = "FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId and ia.idpcId = :idpcId")
-    List<IdpcAccess> findIdpcAccessByCriteria(@QueryParam("defenceClientId") final UUID defenceClientId,
-                                              @QueryParam("idpcId") final UUID idpcId);
+    public IdpcAccessHistoryRepository() {
+        super(IdpcAccess.class);
+    }
 
-    @Query(value = "Select IdpcAccess.organisationId FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId and ia.idpcId = :idpcId")
-    List<UUID> findIdpcAccessOrganisationByCriteria(@QueryParam("defenceClientId") final UUID defenceClientId,
-                                              @QueryParam("idpcId") final UUID idpcId);
+    public List<IdpcAccess> findIdpcAccessByCriteria(final UUID defenceClientId) {
+        return entityManager.createQuery(
+                        "SELECT ia FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId",
+                        IdpcAccess.class)
+                .setParameter(DEFENCE_CLIENT_ID, defenceClientId)
+                .getResultList();
+    }
 
-    @Query(value = "Select  ia.organisationId FROM IdpcAccess ia  WHERE ia.defenceClientId = :defenceClientId GROUP BY ia.organisationId ORDER BY max(accessTimestamp) DESC")
-    List<UUID> findOrderedDistinctOrgIdsOfIdpcAccessForDefenceClient(@QueryParam("defenceClientId") final UUID defenceClientId);
+    public List<IdpcAccess> findIdpcAccessByCriteria(final UUID defenceClientId, final UUID idpcId) {
+        return entityManager.createQuery(
+                        "SELECT ia FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId AND ia.idpcDetailsId = :idpcId",
+                        IdpcAccess.class)
+                .setParameter(DEFENCE_CLIENT_ID, defenceClientId)
+                .setParameter("idpcId", idpcId)
+                .getResultList();
+    }
+
+    public List<UUID> findIdpcAccessOrganisationByCriteria(final UUID defenceClientId, final UUID idpcId) {
+        return entityManager.createQuery(
+                        "SELECT ia.organisationId FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId AND ia.idpcDetailsId = :idpcId",
+                        UUID.class)
+                .setParameter(DEFENCE_CLIENT_ID, defenceClientId)
+                .setParameter("idpcId", idpcId)
+                .getResultList();
+    }
+
+    public List<UUID> findOrderedDistinctOrgIdsOfIdpcAccessForDefenceClient(final UUID defenceClientId) {
+        return entityManager.createQuery(
+                        "SELECT ia.organisationId FROM IdpcAccess ia WHERE ia.defenceClientId = :defenceClientId GROUP BY ia.organisationId ORDER BY MAX(ia.accessTimestamp) DESC",
+                        UUID.class)
+                .setParameter(DEFENCE_CLIENT_ID, defenceClientId)
+                .getResultList();
+    }
 }

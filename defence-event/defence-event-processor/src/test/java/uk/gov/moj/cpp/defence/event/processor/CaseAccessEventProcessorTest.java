@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.moj.cpp.defence.events.SystemScheduledForAdvocateAccessTriggered;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseAccessEventProcessorTest {

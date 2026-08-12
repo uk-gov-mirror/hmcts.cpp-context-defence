@@ -23,8 +23,8 @@ import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationAccess;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationCaseKey;
 import uk.gov.moj.cpp.defence.persistence.entity.RepresentationType;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;

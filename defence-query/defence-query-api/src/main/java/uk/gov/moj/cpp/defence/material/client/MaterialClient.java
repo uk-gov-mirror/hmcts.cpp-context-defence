@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.defence.material.client;
 
-import static javax.ws.rs.client.ClientBuilder.newClient;
+import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.Response;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 

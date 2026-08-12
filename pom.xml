@@ -5,12 +5,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.104.0</version>
+        <version>25.104.0-M10</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.defence</groupId>
     <artifactId>defence-parent</artifactId>
-    <version>17.104.103-SNAPSHOT</version>
+    <version>25.104.0-M1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -35,12 +35,12 @@
         <referencedataoffences.version>17.104.52</referencedataoffences.version>
         <json-generator.version>0.1.0</json-generator.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
-        <coredomain.version>17.104.4</coredomain.version>
+        <coredomain.version>25.104.0-M11</coredomain.version>
         <material.version>17.0.79</material.version>
         <referencedata.version>17.104.140</referencedata.version>
         <listing.version>17.104.8</listing.version>
         <hearing.version>17.104.186</hearing.version>
-        <system.documentgenerator.client.version>1.0.4</system.documentgenerator.client.version>
+        <system.documentgenerator.client.version>25.104.0-M11</system.documentgenerator.client.version>
         <systemdocgenerator.version>17.104.114</systemdocgenerator.version>
         <sonar.coverage.exclusions>
             **/uk/gov/justice/core/**/*,

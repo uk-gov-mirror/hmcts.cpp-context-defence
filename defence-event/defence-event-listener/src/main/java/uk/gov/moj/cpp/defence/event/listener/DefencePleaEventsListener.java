@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.defence.persistence.DefendantAllocationRepository;
 import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocation;
 import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocationPlea;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 
 import static java.util.Objects.isNull;

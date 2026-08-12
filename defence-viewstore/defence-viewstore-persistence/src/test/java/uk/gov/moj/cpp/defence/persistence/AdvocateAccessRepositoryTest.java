@@ -1,37 +1,37 @@
 package uk.gov.moj.cpp.defence.persistence;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.hamcrest.core.Is;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import static java.time.ZonedDateTime.now;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.AssignmentUserDetails;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionAdvocateAccess;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationAccess;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationCaseKey;
 import uk.gov.moj.cpp.defence.persistence.entity.RepresentationType;
 
-
-import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.time.ZonedDateTime.now;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.core.Is;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class AdvocateAccessRepositoryTest extends BaseTransactionalJunit4Test {
+public class AdvocateAccessRepositoryTest {
 
-    @Inject
-    AdvocateAccessRepository advocateAccessRepository;
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    OrganisationAccessRepository organisationAccessRepository;
+    private AdvocateAccessRepository advocateAccessRepository;
+
+    private OrganisationAccessRepository organisationAccessRepository;
 
     private static final UUID CASE_ID = randomUUID();
     private static final UUID ASSIGNEE_ORG_ID = randomUUID();
@@ -39,6 +39,14 @@ public class AdvocateAccessRepositoryTest extends BaseTransactionalJunit4Test {
     private static final UUID ASSIGNOR_ID = randomUUID();
     private static final ZonedDateTime ASSIGNED_TIME = now();
     private static final ZonedDateTime ASSIGNMENT_EXPIRED_DATE = now().plusDays(5);
+
+    @BeforeEach
+    void createRepositories() {
+        advocateAccessRepository = new AdvocateAccessRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(advocateAccessRepository);
+        organisationAccessRepository = new OrganisationAccessRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(organisationAccessRepository);
+    }
 
     @Test
     public void shouldFindCaseIdAndAssigneeId() {
@@ -77,7 +85,7 @@ public class AdvocateAccessRepositoryTest extends BaseTransactionalJunit4Test {
         prosecutionOrganisationAccess.getProsecutionAdvocatesWithAccess().add(prosecutionAdvocateAccess);
         assertThat(organisationAccessRepository.findByAssigneeOrganisationIdAndCaseId(assigneeOrgId, caseId), is(Optional.empty()));
 
-        organisationAccessRepository.save(prosecutionOrganisationAccess);
+        prosecutionOrganisationAccess = organisationAccessRepository.save(prosecutionOrganisationAccess);
         advocateAccessRepository.save(prosecutionAdvocateAccess);
 
         List<ProsecutionAdvocateAccess>  prosecutionAdvocateAccessList = advocateAccessRepository.findAll();
@@ -100,6 +108,82 @@ public class AdvocateAccessRepositoryTest extends BaseTransactionalJunit4Test {
         Optional<ProsecutionOrganisationAccess> prosecutionOrganisationAccessResult = organisationAccessRepository.findByAssigneeOrganisationIdAndCaseId(assigneeOrgId, caseId);
         assertThat(prosecutionOrganisationAccessResult.isPresent(), is(true));
         assertThat(prosecutionOrganisationAccessResult.get(), is(prosecutionOrganisationAccess));
+    }
+
+    @Test
+    public void shouldFindActiveByCaseIdAndAssigneeId() {
+
+        final List<ProsecutionAdvocateAccess> prosecutionAdvocateAccessList = buildProsecutionAdvocateAccessEntity();
+
+        final List<ProsecutionAdvocateAccess> activeAssignments = advocateAccessRepository.findActiveByCaseIdAndAssigneeId(CASE_ID, ASSIGNEE_ID);
+
+        assertThat(activeAssignments.size(), Is.is(1));
+        assertThat(activeAssignments.get(0).getCaseId(), is(prosecutionAdvocateAccessList.get(0).getCaseId()));
+        assertThat(activeAssignments.get(0).getAssigneeDetails().getUserId(), is(ASSIGNEE_ID));
+    }
+
+    @Test
+    public void shouldNotFindActiveByCaseIdAndAssigneeIdWhenAssignmentExpired() {
+
+        final ProsecutionOrganisationAccess prosecutionOrganisation = buildProsecutionOrganisationAccess();
+        organisationAccessRepository.saveAndFlush(prosecutionOrganisation);
+
+        final AssignmentUserDetails assigneeDetails = new AssignmentUserDetails();
+        assigneeDetails.setUserId(ASSIGNEE_ID);
+        assigneeDetails.setId(randomUUID());
+        assigneeDetails.setFirstName("First name");
+        assigneeDetails.setLastName("Last name");
+
+        final ProsecutionAdvocateAccess expiredAdvocateAccess = new ProsecutionAdvocateAccess();
+        expiredAdvocateAccess.setId(randomUUID());
+        expiredAdvocateAccess.setCaseId(CASE_ID);
+        expiredAdvocateAccess.setAssignedDate(ASSIGNED_TIME);
+        expiredAdvocateAccess.setAssigneeDetails(assigneeDetails);
+        expiredAdvocateAccess.setAssignmentExpiryDate(now().minusDays(1));
+        expiredAdvocateAccess.setProsecutionOrganisation(prosecutionOrganisation);
+        advocateAccessRepository.save(expiredAdvocateAccess);
+
+        final List<ProsecutionAdvocateAccess> activeAssignments = advocateAccessRepository.findActiveByCaseIdAndAssigneeId(CASE_ID, ASSIGNEE_ID);
+
+        assertThat(activeAssignments.size(), Is.is(0));
+    }
+
+    @Test
+    public void shouldFindExpiredCaseAssignments() {
+
+        final ProsecutionOrganisationAccess prosecutionOrganisation = buildProsecutionOrganisationAccess();
+        organisationAccessRepository.saveAndFlush(prosecutionOrganisation);
+
+        final ProsecutionAdvocateAccess expiredAdvocateAccess = new ProsecutionAdvocateAccess();
+        expiredAdvocateAccess.setId(randomUUID());
+        expiredAdvocateAccess.setCaseId(CASE_ID);
+        expiredAdvocateAccess.setAssignedDate(ASSIGNED_TIME);
+        expiredAdvocateAccess.setAssignmentExpiryDate(now().minusDays(3));
+        expiredAdvocateAccess.setProsecutionOrganisation(prosecutionOrganisation);
+        advocateAccessRepository.save(expiredAdvocateAccess);
+
+        final List<ProsecutionAdvocateAccess> expiredAssignments = advocateAccessRepository.findExpiredCaseAssignments();
+
+        assertThat(expiredAssignments.size(), Is.is(1));
+        assertThat(expiredAssignments.get(0).getId(), is(expiredAdvocateAccess.getId()));
+    }
+
+    @Test
+    public void shouldExposeBaseRepositoryFindOptionalByMergeAndCount() {
+
+        final List<ProsecutionAdvocateAccess> prosecutionAdvocateAccessList = buildProsecutionAdvocateAccessEntity();
+        final ProsecutionAdvocateAccess saved = prosecutionAdvocateAccessList.get(0);
+
+        final Optional<ProsecutionAdvocateAccess> found = advocateAccessRepository.findOptionalBy(saved.getId());
+        assertThat(found.isPresent(), is(true));
+        assertThat(found.get().getId(), is(saved.getId()));
+
+        assertThat(advocateAccessRepository.findOptionalBy(randomUUID()).isPresent(), is(false));
+
+        final ProsecutionAdvocateAccess merged = advocateAccessRepository.merge(saved);
+        assertThat(merged.getId(), is(saved.getId()));
+
+        assertThat(advocateAccessRepository.count(), Is.is(1L));
     }
 
     @Test
@@ -178,8 +262,7 @@ public class AdvocateAccessRepositoryTest extends BaseTransactionalJunit4Test {
         advocateAccess.setAssignorDetails(assignorUser);
         advocateAccess.setAssignorOrganisationName("CPS");
         advocateAccess.setProsecutionOrganisation(prosecutionOrganisation);
-        advocateAccessRepository.save(advocateAccess);
-        advocateAccessList.add(advocateAccess);
+        advocateAccessList.add(advocateAccessRepository.save(advocateAccess));
 
         return advocateAccessList;
     }

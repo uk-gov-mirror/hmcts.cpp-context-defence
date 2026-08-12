@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static uk.gov.moj.cpp.defence.CaseDetails.caseDetails;
 import static uk.gov.moj.cpp.defence.event.processor.commands.ProsecutionCaseReceiveDetails.prosecutionCaseReceiveDetails;

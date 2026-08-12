@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import uk.gov.justice.cps.defence.PersonDetails;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.Organisation;
 import uk.gov.moj.cpp.defence.persistence.entity.AssignmentUserDetails;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationAccess;
@@ -12,23 +13,22 @@ import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationCaseKey;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-@Transactional
 public class OrganisationAccessRepositoryTest {
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
+
     private OrganisationAccessRepository organisationAccessRepository;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void createRepositoryAndClearData() {
+        organisationAccessRepository = new OrganisationAccessRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(organisationAccessRepository);
         organisationAccessRepository.findAll().forEach(organisationAccessRepository::remove);
         organisationAccessRepository.flush();
     }
@@ -72,6 +72,19 @@ public class OrganisationAccessRepositoryTest {
         assertThat(organisationAccessRepository.findAll().size(), is(5));
         assertThat(organisationAccessRepository.findExpiredCaseAssignments().size(), is(3));
         assertThat(organisationAccessRepository.findExpiredCaseAssignments(2).size(), is(2));
+    }
+
+    @Test
+    public void shouldFindByCaseId() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID otherCaseId = UUID.randomUUID();
+        createOrganisationAccessRecord(caseId, UUID.randomUUID(), UUID.randomUUID(), ZonedDateTime.now().plusDays(1));
+        createOrganisationAccessRecord(caseId, UUID.randomUUID(), UUID.randomUUID(), ZonedDateTime.now().plusDays(1));
+        createOrganisationAccessRecord(otherCaseId, UUID.randomUUID(), UUID.randomUUID(), ZonedDateTime.now().plusDays(1));
+
+        assertThat(organisationAccessRepository.findByCaseId(caseId).size(), is(2));
+        assertThat(organisationAccessRepository.findByCaseId(otherCaseId).size(), is(1));
+        assertThat(organisationAccessRepository.findByCaseId(UUID.randomUUID()).size(), is(0));
     }
 
     @Test

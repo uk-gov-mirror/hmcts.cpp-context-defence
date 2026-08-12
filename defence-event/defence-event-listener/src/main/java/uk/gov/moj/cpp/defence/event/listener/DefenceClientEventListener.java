@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefenceClientEventListener {

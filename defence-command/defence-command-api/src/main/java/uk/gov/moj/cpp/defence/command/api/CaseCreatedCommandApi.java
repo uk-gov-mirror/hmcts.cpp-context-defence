@@ -12,7 +12,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.json.schema.event.ProsecutionCaseCreatedBdf;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class CaseCreatedCommandApi {

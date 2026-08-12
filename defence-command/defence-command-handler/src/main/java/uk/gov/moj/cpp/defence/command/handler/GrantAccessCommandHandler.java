@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class GrantAccessCommandHandler {

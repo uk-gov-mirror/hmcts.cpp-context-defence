@@ -4,32 +4,39 @@ import static java.util.UUID.randomUUID;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.IdpcAccess;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.awaitility.Durations;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class IdpcAccessHistoryRepositoryIT extends BaseTransactionalJunit4Test {
+public class IdpcAccessHistoryRepositoryTest {
 
-    @Inject
-    IdpcAccessHistoryRepository idpcAccessHistoryRepository;
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    DefenceClientRepository defenceClientRepository;
+    private IdpcAccessHistoryRepository idpcAccessHistoryRepository;
+
+    private DefenceClientRepository defenceClientRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        idpcAccessHistoryRepository = new IdpcAccessHistoryRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(idpcAccessHistoryRepository);
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+    }
 
     private static UUID DEFENCECLIENT_ID = randomUUID();
     private static UUID USER_ID = randomUUID();
@@ -41,28 +48,28 @@ public class IdpcAccessHistoryRepositoryIT extends BaseTransactionalJunit4Test {
     @Test
     public void shouldSaveIDPCAccess() {
         final IdpcAccess idpcAccess = createStaticIdpcAccess();
-        idpcAccessHistoryRepository.save(idpcAccess);
+        final IdpcAccess savedIdpcAccess = idpcAccessHistoryRepository.save(idpcAccess);
 
         final List<IdpcAccess> resultList = idpcAccessHistoryRepository.findIdpcAccessByCriteria(DEFENCECLIENT_ID);
         //ensure it is there
         assertThat(resultList.size(), is(1));
         final IdpcAccess idpcAccessSaved = resultList.get(0);
 
-        assertThat(idpcAccess, is(idpcAccessSaved));
+        assertThat(savedIdpcAccess, is(idpcAccessSaved));
     }
 
     @Test
     public void shouldSaveMultipleIDPCAccesses() {
         final IdpcAccess idpcAccess1 = createRandomIdpcAccessFor(DEFENCECLIENT_ID);
         final IdpcAccess idpcAccess2 = createRandomIdpcAccessFor(DEFENCECLIENT_ID);
-        idpcAccessHistoryRepository.save(idpcAccess1);
-        idpcAccessHistoryRepository.save(idpcAccess2);
+        final IdpcAccess savedIdpcAccess1 = idpcAccessHistoryRepository.save(idpcAccess1);
+        final IdpcAccess savedIdpcAccess2 = idpcAccessHistoryRepository.save(idpcAccess2);
 
         final List<IdpcAccess> resultList = idpcAccessHistoryRepository.findIdpcAccessByCriteria(DEFENCECLIENT_ID);
         //ensure it is there
         assertThat(resultList.size(), is(2));
 
-        assertThat(Collections.addAll(new ArrayList<>(), idpcAccess1, idpcAccess2), is(resultList));
+        assertThat(resultList, containsInAnyOrder(savedIdpcAccess1, savedIdpcAccess2));
     }
 
     @Test
@@ -83,6 +90,33 @@ public class IdpcAccessHistoryRepositoryIT extends BaseTransactionalJunit4Test {
         final List<UUID> resultList = idpcAccessHistoryRepository.findOrderedDistinctOrgIdsOfIdpcAccessForDefenceClient(DEFENCECLIENT_ID);
 
         assertThat(resultList, is(organisations));
+    }
+
+    @Test
+    public void shouldFindIdpcAccessByDefenceClientIdAndIdpcDetailsId() {
+        final UUID defenceClientId = randomUUID();
+        final UUID idpcDetailsId = randomUUID();
+        final IdpcAccess matching = new IdpcAccess(randomUUID(), defenceClientId, idpcDetailsId, randomUUID(), randomUUID(), NOW);
+        final IdpcAccess differentIdpcDetails = new IdpcAccess(randomUUID(), defenceClientId, randomUUID(), randomUUID(), randomUUID(), NOW);
+        idpcAccessHistoryRepository.save(matching);
+        idpcAccessHistoryRepository.save(differentIdpcDetails);
+
+        final List<IdpcAccess> result = idpcAccessHistoryRepository.findIdpcAccessByCriteria(defenceClientId, idpcDetailsId);
+
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getIdpcDetailsId(), is(idpcDetailsId));
+    }
+
+    @Test
+    public void shouldFindIdpcAccessOrganisationByDefenceClientIdAndIdpcDetailsId() {
+        final UUID defenceClientId = randomUUID();
+        final UUID idpcDetailsId = randomUUID();
+        final UUID organisationId = randomUUID();
+        idpcAccessHistoryRepository.save(new IdpcAccess(randomUUID(), defenceClientId, idpcDetailsId, randomUUID(), organisationId, NOW));
+
+        final List<UUID> result = idpcAccessHistoryRepository.findIdpcAccessOrganisationByCriteria(defenceClientId, idpcDetailsId);
+
+        assertThat(result, is(List.of(organisationId)));
     }
 
     private IdpcAccess createStaticIdpcAccess() {

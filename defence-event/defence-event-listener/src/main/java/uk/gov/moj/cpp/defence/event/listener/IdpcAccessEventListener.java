@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.defence.events.IdpcAccessRecorded;
 import uk.gov.moj.cpp.defence.persistence.IdpcAccessHistoryRepository;
 import uk.gov.moj.cpp.defence.persistence.entity.IdpcAccess;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class IdpcAccessEventListener {

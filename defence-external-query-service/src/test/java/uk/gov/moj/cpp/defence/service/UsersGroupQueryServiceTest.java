@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.defence.service;
 
 
-import io.smallrye.common.constraint.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,8 +13,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,13 +151,13 @@ public class UsersGroupQueryServiceTest {
     @Test
     public void shouldReturnTrueForNonCPSProsecutorWithValidProsecutingAuthority() {
         final boolean result = usersGroupQueryService.isNonCPSProsecutorWithValidProsecutingAuthority(getUserGroupsResponse(), NON_CPS_PROSECUTORS, "DVLA");
-        Assert.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
     public void shouldReturnFalseForNonCPSProsecutorWithValidProsecutingAuthority() {
         final boolean result = usersGroupQueryService.isNonCPSProsecutorWithValidProsecutingAuthority(getUserGroupsResponse(), NON_CPS_PROSECUTORS, "DVLA1");
-        Assert.assertFalse(result);
+        assertFalse(result);
     }
 
     private JsonObject getUserGroupsResponse() {

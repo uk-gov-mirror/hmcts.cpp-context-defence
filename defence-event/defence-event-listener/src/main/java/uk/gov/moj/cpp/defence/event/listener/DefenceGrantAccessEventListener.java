@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.defence.persistence.entity.OrganisationDetails;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefenceGrantAccessEventListener {

@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.defence.service.UserGroupService;
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class GrantAccessEventProcessor {

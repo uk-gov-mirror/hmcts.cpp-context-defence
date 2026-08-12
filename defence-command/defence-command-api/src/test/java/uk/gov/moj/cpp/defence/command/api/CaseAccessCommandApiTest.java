@@ -31,7 +31,7 @@ import uk.gov.moj.cpp.defence.service.UserGroupService;
 import uk.gov.moj.cpp.defence.service.UsersGroupQueryService;
 
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 

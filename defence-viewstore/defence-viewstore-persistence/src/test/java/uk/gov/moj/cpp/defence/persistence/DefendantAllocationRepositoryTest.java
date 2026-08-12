@@ -1,15 +1,14 @@
 package uk.gov.moj.cpp.defence.persistence;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocation;
 import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocationPlea;
 
-import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +16,23 @@ import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
 
-@RunWith(CdiTestRunner.class)
-public class DefendantAllocationRepositoryIT extends BaseTransactionalTest {
+public class DefendantAllocationRepositoryTest {
 
-    @Inject
-    DefendantAllocationRepository defendantAllocationRepository;
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    DefenceClientRepository defenceClientRepository;
+    private DefendantAllocationRepository defendantAllocationRepository;
+
+    private DefenceClientRepository defenceClientRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        defendantAllocationRepository = new DefendantAllocationRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defendantAllocationRepository);
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+    }
 
     final UUID caseId= randomUUID();
     final UUID defendantId= randomUUID();
@@ -38,12 +46,12 @@ public class DefendantAllocationRepositoryIT extends BaseTransactionalTest {
 
         DefendantAllocation found = defendantAllocationRepository.findBy(defendantAllocation.getId());
         List<DefendantAllocationPlea> pleas=found.getDefendantAllocationPleas();
-        Assert.assertSame(defendantAllocation.getId(), found.getId());
-        Assert.assertSame(defendantAllocation.getAcknowledgement(), found.getAcknowledgement());
-        Assert.assertSame(defendantAllocation.getDefendantId(), found.getDefendantId());
-        Assert.assertEquals(2,pleas.size());
-        Assert.assertEquals(pleas.get(0).getOffenceId(), offenceId1);
-        Assert.assertEquals(pleas.get(1).getOffenceId(), offenceId2);
+        Assertions.assertSame(defendantAllocation.getId(), found.getId());
+        Assertions.assertSame(defendantAllocation.getAcknowledgement(), found.getAcknowledgement());
+        Assertions.assertSame(defendantAllocation.getDefendantId(), found.getDefendantId());
+        Assertions.assertEquals(2,pleas.size());
+        Assertions.assertEquals(pleas.get(0).getOffenceId(), offenceId1);
+        Assertions.assertEquals(pleas.get(1).getOffenceId(), offenceId2);
     }
 
     @Test
@@ -53,7 +61,7 @@ public class DefendantAllocationRepositoryIT extends BaseTransactionalTest {
         defendantAllocationRepository.save(defendantAllocation);
 
         DefendantAllocation found = defendantAllocationRepository.findBy(defendantAllocation.getId());
-        Assert.assertNull(found.getDefendantAllocationPleas().get(0).getPleaDate());
+        Assertions.assertNull(found.getDefendantAllocationPleas().get(0).getPleaDate());
 
         //updated
         found.getDefendantAllocationPleas().get(0).setPleaDate(LocalDate.now());
@@ -61,11 +69,11 @@ public class DefendantAllocationRepositoryIT extends BaseTransactionalTest {
 
         //verify updated
         DefendantAllocation foundAfterUpdate = defendantAllocationRepository.findBy(defendantAllocation.getId());
-        Assert.assertNotNull(foundAfterUpdate.getDefendantAllocationPleas().get(0).getPleaDate());
+        Assertions.assertNotNull(foundAfterUpdate.getDefendantAllocationPleas().get(0).getPleaDate());
 
-        Assert.assertSame(defendantAllocation.getId(), foundAfterUpdate.getId());
-        Assert.assertSame(defendantAllocation.getAcknowledgement(), foundAfterUpdate.getAcknowledgement());
-        Assert.assertSame(defendantAllocation.getDefendantId(), foundAfterUpdate.getDefendantId());
+        Assertions.assertSame(defendantAllocation.getId(), foundAfterUpdate.getId());
+        Assertions.assertSame(defendantAllocation.getAcknowledgement(), foundAfterUpdate.getAcknowledgement());
+        Assertions.assertSame(defendantAllocation.getDefendantId(), foundAfterUpdate.getDefendantId());
 
     }
 
@@ -82,8 +90,8 @@ public class DefendantAllocationRepositoryIT extends BaseTransactionalTest {
         defendantAllocationRepository.save(defendantAllocation);
 
         List<DefendantAllocation> pleasForCase = defendantAllocationRepository.findDefendantAllocationByCaseId(caseId);
-        Assert.assertNotNull(pleasForCase);
-        Assert.assertEquals(defendantId,pleasForCase.get(0).getDefendantId());
+        Assertions.assertNotNull(pleasForCase);
+        Assertions.assertEquals(defendantId,pleasForCase.get(0).getDefendantId());
     }
 
     private DefendantAllocation createDefendantAllocation(UUID defendantId) {

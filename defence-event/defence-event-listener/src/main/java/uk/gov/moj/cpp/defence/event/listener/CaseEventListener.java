@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.defence.events.ProsecutionCaseReceived;
 import uk.gov.moj.cpp.defence.persistence.DefenceCaseRepository;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceCase;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseEventListener {

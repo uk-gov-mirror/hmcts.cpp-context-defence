@@ -16,7 +16,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.defence.aggregate.DefenceClient;
 import uk.gov.moj.cpp.defence.aggregate.DefencePleaAggregate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.stream.Stream;

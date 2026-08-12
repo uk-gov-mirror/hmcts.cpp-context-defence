@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.defence.persistence.DefendantAllocationRepository;
 import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocation;
 import uk.gov.moj.cpp.defence.persistence.entity.DefendantAllocationPlea;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;

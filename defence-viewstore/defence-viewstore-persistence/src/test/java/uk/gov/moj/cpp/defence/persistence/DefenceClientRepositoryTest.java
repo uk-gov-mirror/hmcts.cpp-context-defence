@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceCase;
 import uk.gov.moj.cpp.defence.persistence.entity.DefenceClient;
 
@@ -19,25 +19,31 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
+public class DefenceClientRepositoryTest {
 
     public static final String PTI_URN = "01AA1111111";
     public static final String PROSECUTING_AUTHORITY = "TFL";
     public static final String ORGANISATION_NAME = "organisation_name";
 
-    @Inject
-    DefenceClientRepository defenceClientRepository;
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider =
+            new HibernateTestEntityManagerProvider("defence-test-persistence-unit");
 
-    @Inject
-    DefenceCaseRepository defenceCaseRepository;
+    private DefenceClientRepository defenceClientRepository;
+
+    private DefenceCaseRepository defenceCaseRepository;
+
+    @BeforeEach
+    void createRepositories() {
+        defenceClientRepository = new DefenceClientRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceClientRepository);
+        defenceCaseRepository = new DefenceCaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defenceCaseRepository);
+    }
 
     @Test
     public void shouldFindDefenceClientByCriteriaWhenMatchExistsInDB() {
@@ -48,7 +54,7 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         final DefenceClient defClient2 = getDefenceClient2(defenceCase.getId());
 
         defenceClientRepository.save(defClient1);
-        defenceClientRepository.save(defClient2);
+        final DefenceClient savedClient2 = defenceClientRepository.save(defClient2);
         defenceCaseRepository.save(defenceCase);
 
         final DefenceClient client = defenceClientRepository.findDefenceClientByCriteria(defClient1.getFirstName(), defClient1.getLastName(), defClient1.getDateOfBirth(), PTI_URN).get(0);
@@ -59,11 +65,11 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         assertThat("Unexpected DOB value in retrieved DefenceClient Entity", client.getDateOfBirth(), is(defClient1.getDateOfBirth()));
         assertThat("Unexpected Defendant Id value in retrieved DefenceClient Entity", client.getDefendantId(), is(defClient1.getDefendantId()));
 
-        defenceClientRepository.refresh(defClient2);
-        assertThat("Unexpected isVisible value in saved DefenceClient Entity", defClient2.getVisible(), is(true) );
+        defenceClientRepository.refresh(savedClient2);
+        assertThat("Unexpected isVisible value in saved DefenceClient Entity", savedClient2.getVisible(), is(true) );
 
         defenceClientRepository.remove(defClient1);
-        defenceClientRepository.remove(defClient2);
+        defenceClientRepository.remove(savedClient2);
     }
 
     @Test
@@ -161,7 +167,7 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         defClient2.setOrganisationName(ORGANISATION_NAME);
 
         defenceClientRepository.save(defClient1);
-        defenceClientRepository.save(defClient2);
+        final DefenceClient savedClient2 = defenceClientRepository.save(defClient2);
         defenceCaseRepository.save(defenceCase);
 
         final DefenceClient client = defenceClientRepository.findDefenceClientByCriteria(defClient1.getOrganisationName(), PTI_URN, TRUE).get(0);
@@ -172,11 +178,11 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         assertThat("Unexpected DOB value in retrieved DefenceClient Entity", client.getDateOfBirth(), is(defClient1.getDateOfBirth()));
         assertThat("Unexpected Defendant Id value in retrieved DefenceClient Entity", client.getDefendantId(), is(defClient1.getDefendantId()));
 
-        defenceClientRepository.refresh(defClient2);
-        assertThat("Unexpected isVisible value in saved DefenceClient Entity", defClient2.getVisible(), is(true) );
+        defenceClientRepository.refresh(savedClient2);
+        assertThat("Unexpected isVisible value in saved DefenceClient Entity", savedClient2.getVisible(), is(true) );
 
         defenceClientRepository.remove(defClient1);
-        defenceClientRepository.remove(defClient2);
+        defenceClientRepository.remove(savedClient2);
     }
 
     @Test
@@ -188,7 +194,7 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         defClient2.setOrganisationName(ORGANISATION_NAME);
 
         defenceClientRepository.save(defClient1);
-        defenceClientRepository.save(defClient2);
+        final DefenceClient savedClient2 = defenceClientRepository.save(defClient2);
         defenceCaseRepository.save(defenceCase);
 
         final DefenceClient client = defenceClientRepository.findDefenceClientByCriteria(defClient1.getOrganisationName(), TRUE).get(0);
@@ -199,11 +205,11 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         assertThat("Unexpected DOB value in retrieved DefenceClient Entity", client.getDateOfBirth(), is(defClient1.getDateOfBirth()));
         assertThat("Unexpected Defendant Id value in retrieved DefenceClient Entity", client.getDefendantId(), is(defClient1.getDefendantId()));
 
-        defenceClientRepository.refresh(defClient2);
-        assertThat("Unexpected isVisible value in saved DefenceClient Entity", defClient2.getVisible(), is(true) );
+        defenceClientRepository.refresh(savedClient2);
+        assertThat("Unexpected isVisible value in saved DefenceClient Entity", savedClient2.getVisible(), is(true) );
 
         defenceClientRepository.remove(defClient1);
-        defenceClientRepository.remove(defClient2);
+        defenceClientRepository.remove(savedClient2);
     }
 
     @Test
@@ -474,6 +480,112 @@ public class DefenceClientRepositoryIT extends BaseTransactionalJunit4Test {
         final List<UUID> defendantIdFromDB = defenceClientRepository.getOrganisationDefendant("ORGANISATION_NAME", TRUE, FALSE);
 
         assertThat(defendantIdFromDB.get(0), is(defendantId));
+    }
+
+    @Test
+    public void shouldFindDefenceClientByCriteriaWithFirstNameLastNameAndDob() {
+        final DefenceCase defenceCase = new DefenceCase(randomUUID(), PTI_URN, PROSECUTING_AUTHORITY, FALSE, FALSE);
+        final DefenceClient defClient1 = getDefenceClient1(defenceCase.getId());
+        final DefenceClient defClient2 = getDefenceClient2(defenceCase.getId());
+
+        defenceClientRepository.save(defClient1);
+        defenceClientRepository.save(defClient2);
+        defenceCaseRepository.save(defenceCase);
+
+        final List<DefenceClient> clients = defenceClientRepository.findDefenceClientByCriteria(defClient1.getFirstName(), defClient1.getLastName(), defClient1.getDateOfBirth());
+
+        assertThat(clients, hasSize(1));
+        assertThat(clients.get(0).getId(), is(defClient1.getId()));
+    }
+
+    @Test
+    public void shouldFindDefenceClientByCriteriaWithOrganisationNameAndUrn() {
+        final DefenceCase defenceCase = new DefenceCase(randomUUID(), PTI_URN, PROSECUTING_AUTHORITY, FALSE, FALSE);
+        final DefenceClient defClient1 = getDefenceClient1(defenceCase.getId());
+        defClient1.setOrganisationName(ORGANISATION_NAME);
+
+        defenceClientRepository.save(defClient1);
+        defenceCaseRepository.save(defenceCase);
+
+        final List<DefenceClient> clients = defenceClientRepository.findDefenceClientByCriteria(ORGANISATION_NAME, PTI_URN);
+
+        assertThat(clients, hasSize(1));
+        assertThat(clients.get(0).getId(), is(defClient1.getId()));
+    }
+
+    @Test
+    public void shouldFindDefenceClientByCriteriaWithOrganisationName() {
+        final DefenceCase defenceCase = new DefenceCase(randomUUID(), PTI_URN, PROSECUTING_AUTHORITY, FALSE, FALSE);
+        final DefenceClient defClient1 = getDefenceClient1(defenceCase.getId());
+        defClient1.setOrganisationName(ORGANISATION_NAME);
+
+        defenceClientRepository.save(defClient1);
+        defenceCaseRepository.save(defenceCase);
+
+        final List<DefenceClient> clients = defenceClientRepository.findDefenceClientByCriteria(ORGANISATION_NAME);
+
+        assertThat(clients, hasSize(1));
+        assertThat(clients.get(0).getId(), is(defClient1.getId()));
+    }
+
+    @Test
+    public void shouldFindDefenceClientByCriteriaWithDefendantId() {
+        final UUID defendantId = randomUUID();
+        final DefenceClient defClient1 = new DefenceClient(randomUUID(), "FIRST", "LAST", randomUUID(), of(1980, 1, 1), defendantId);
+        defenceClientRepository.save(defClient1);
+
+        final DefenceClient client = defenceClientRepository.findDefenceClientByCriteria(defendantId);
+
+        assertThat(client, notNullValue());
+        assertThat(client.getId(), is(defClient1.getId()));
+        assertThat(defenceClientRepository.findDefenceClientByCriteria(randomUUID()), nullValue());
+    }
+
+    @Test
+    public void shouldFindOptionalByDefendantIdAndCaseId() {
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final DefenceClient defClient1 = new DefenceClient(randomUUID(), "FIRST", "LAST", caseId, of(1980, 1, 1), defendantId);
+        defenceClientRepository.save(defClient1);
+
+        final DefenceClient client = defenceClientRepository.findOptionalByDefendantIdAndCaseId(defendantId, caseId);
+
+        assertThat(client, notNullValue());
+        assertThat(client.getId(), is(defClient1.getId()));
+        assertThat(defenceClientRepository.findOptionalByDefendantIdAndCaseId(defendantId, randomUUID()), nullValue());
+    }
+
+    @Test
+    public void shouldFindCasesAssociatedWithDefenceClientByPersonDefendant() {
+        final UUID caseId = randomUUID();
+        final DefenceCase defenceCase = new DefenceCase(caseId, PTI_URN, PROSECUTING_AUTHORITY, FALSE, FALSE);
+        final DefenceClient defClient1 = getDefenceClient1(caseId);
+        final DefenceClient defClient2 = getDefenceClient2(caseId);
+
+        defenceClientRepository.save(defClient1);
+        defenceClientRepository.save(defClient2);
+        defenceCaseRepository.save(defenceCase);
+
+        final List<UUID> caseIds = defenceClientRepository.findCasesAssociatedWithDefenceClientByPersonDefendant(defClient1.getFirstName(), defClient1.getLastName(), defClient1.getDateOfBirth());
+
+        assertThat(caseIds, hasSize(1));
+        assertThat(caseIds.get(0), is(caseId));
+    }
+
+    @Test
+    public void shouldFindCasesAssociatedWithDefenceClientByOrganisationDefendant() {
+        final UUID caseId = randomUUID();
+        final DefenceCase defenceCase = new DefenceCase(caseId, PTI_URN, PROSECUTING_AUTHORITY, FALSE, FALSE);
+        final DefenceClient defClient1 = getDefenceClient1(caseId);
+        defClient1.setOrganisationName(ORGANISATION_NAME);
+
+        defenceClientRepository.save(defClient1);
+        defenceCaseRepository.save(defenceCase);
+
+        final List<UUID> caseIds = defenceClientRepository.findCasesAssociatedWithDefenceClientByOrganisationDefendant(ORGANISATION_NAME);
+
+        assertThat(caseIds, hasSize(1));
+        assertThat(caseIds.get(0), is(caseId));
     }
 
     protected UUID saveDefenceClientAndLastAssociatedOrganisation(final UUID defendantId, final UUID organisationId) {

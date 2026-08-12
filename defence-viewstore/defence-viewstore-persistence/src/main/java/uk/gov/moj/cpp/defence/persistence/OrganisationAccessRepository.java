@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.defence.persistence;
 
-
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationAccess;
 import uk.gov.moj.cpp.defence.persistence.entity.ProsecutionOrganisationCaseKey;
 
@@ -8,30 +7,65 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.MaxResults;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Repository
-public interface OrganisationAccessRepository extends EntityRepository<ProsecutionOrganisationAccess, ProsecutionOrganisationCaseKey> {
+@ApplicationScoped
+public class OrganisationAccessRepository extends AbstractDefenceRepository<ProsecutionOrganisationAccess, ProsecutionOrganisationCaseKey> {
 
-    @Query("from ProsecutionOrganisationAccess poa where poa.id.caseId=:caseId")
-    List<ProsecutionOrganisationAccess> findByCaseId(@QueryParam("caseId") UUID caseId);
+    private static final String CASE_ID = "caseId";
+    private static final String ASSIGNEE_ORGANISATION_ID = "assigneeOrganisationId";
 
-    @Query("from ProsecutionOrganisationAccess poa where poa.id.assigneeOrganisationId=:assigneeOrganisationId and poa.id.caseId=:caseId")
-    Optional<ProsecutionOrganisationAccess> findByAssigneeOrganisationIdAndCaseId(@QueryParam("assigneeOrganisationId") UUID assigneeOrganisationId, @QueryParam("caseId") UUID caseId);
+    public OrganisationAccessRepository() {
+        super(ProsecutionOrganisationAccess.class);
+    }
 
-    @Query("from ProsecutionOrganisationAccess poa where poa.id.caseId=:caseId and poa.id.assigneeOrganisationId=:assigneeOrganisationId")
-    List<ProsecutionOrganisationAccess> findByCaseIdAndAssigneeOrganisationId(@QueryParam("caseId") UUID caseId, @QueryParam("assigneeOrganisationId") UUID assigneeOrganisationId);
+    public List<ProsecutionOrganisationAccess> findByCaseId(final UUID caseId) {
+        return entityManager.createQuery(
+                        "SELECT poa FROM ProsecutionOrganisationAccess poa WHERE poa.id.caseId = :caseId",
+                        ProsecutionOrganisationAccess.class)
+                .setParameter(CASE_ID, caseId)
+                .getResultList();
+    }
 
-    @Query("from ProsecutionOrganisationAccess poa where poa.id.caseId=:caseId and poa.id.assigneeOrganisationId=:assigneeOrganisationId and (poa.assignmentExpiryDate is null or poa.assignmentExpiryDate > now())")
-    List<ProsecutionOrganisationAccess> findActiveByCaseIdAndAssigneeOrganisationId(@QueryParam("caseId") UUID caseId, @QueryParam("assigneeOrganisationId") UUID assigneeOrganisationId);
+    public Optional<ProsecutionOrganisationAccess> findByAssigneeOrganisationIdAndCaseId(final UUID assigneeOrganisationId, final UUID caseId) {
+        return entityManager.createQuery(
+                        "SELECT poa FROM ProsecutionOrganisationAccess poa WHERE poa.id.assigneeOrganisationId = :assigneeOrganisationId AND poa.id.caseId = :caseId",
+                        ProsecutionOrganisationAccess.class)
+                .setParameter(ASSIGNEE_ORGANISATION_ID, assigneeOrganisationId)
+                .setParameter(CASE_ID, caseId)
+                .getResultStream().findFirst();
+    }
 
-    @Query(value = "from ProsecutionOrganisationAccess poa where poa.assignmentExpiryDate  < now() and poa.prosecutionAdvocatesWithAccess is EMPTY order by poa.assignmentExpiryDate desc")
-    List<ProsecutionOrganisationAccess> findExpiredCaseAssignments();
+    public List<ProsecutionOrganisationAccess> findByCaseIdAndAssigneeOrganisationId(final UUID caseId, final UUID assigneeOrganisationId) {
+        return entityManager.createQuery(
+                        "SELECT poa FROM ProsecutionOrganisationAccess poa WHERE poa.id.caseId = :caseId AND poa.id.assigneeOrganisationId = :assigneeOrganisationId",
+                        ProsecutionOrganisationAccess.class)
+                .setParameter(CASE_ID, caseId)
+                .setParameter(ASSIGNEE_ORGANISATION_ID, assigneeOrganisationId)
+                .getResultList();
+    }
 
-    @Query(value = "from ProsecutionOrganisationAccess poa where poa.assignmentExpiryDate  < now() and poa.prosecutionAdvocatesWithAccess is EMPTY order by poa.assignmentExpiryDate desc")
-    List<ProsecutionOrganisationAccess> findExpiredCaseAssignments(@MaxResults int max);
+    public List<ProsecutionOrganisationAccess> findActiveByCaseIdAndAssigneeOrganisationId(final UUID caseId, final UUID assigneeOrganisationId) {
+        return entityManager.createQuery(
+                        "SELECT poa FROM ProsecutionOrganisationAccess poa WHERE poa.id.caseId = :caseId AND poa.id.assigneeOrganisationId = :assigneeOrganisationId AND (poa.assignmentExpiryDate IS NULL OR poa.assignmentExpiryDate > CURRENT_TIMESTAMP)",
+                        ProsecutionOrganisationAccess.class)
+                .setParameter(CASE_ID, caseId)
+                .setParameter(ASSIGNEE_ORGANISATION_ID, assigneeOrganisationId)
+                .getResultList();
+    }
+
+    public List<ProsecutionOrganisationAccess> findExpiredCaseAssignments() {
+        return entityManager.createQuery(
+                        "SELECT poa FROM ProsecutionOrganisationAccess poa WHERE poa.assignmentExpiryDate < CURRENT_TIMESTAMP AND poa.prosecutionAdvocatesWithAccess IS EMPTY ORDER BY poa.assignmentExpiryDate DESC",
+                        ProsecutionOrganisationAccess.class)
+                .getResultList();
+    }
+
+    public List<ProsecutionOrganisationAccess> findExpiredCaseAssignments(final int max) {
+        return entityManager.createQuery(
+                        "SELECT poa FROM ProsecutionOrganisationAccess poa WHERE poa.assignmentExpiryDate < CURRENT_TIMESTAMP AND poa.prosecutionAdvocatesWithAccess IS EMPTY ORDER BY poa.assignmentExpiryDate DESC",
+                        ProsecutionOrganisationAccess.class)
+                .setMaxResults(max)
+                .getResultList();
+    }
 }

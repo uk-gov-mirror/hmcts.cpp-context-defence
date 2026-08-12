@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.defence.query.api.service;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;

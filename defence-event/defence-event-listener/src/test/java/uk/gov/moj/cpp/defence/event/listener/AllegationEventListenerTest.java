@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.defence.event.listener;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static org.apache.deltaspike.core.util.ArraysUtils.asSet;
+import java.util.HashSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.notNullValue;
@@ -185,7 +185,7 @@ public class AllegationEventListenerTest {
         defenceClient.setFirstName("firstName");
         defenceClient.setLastName("lastName");
         defenceClient.setDefendantId(defendantId);
-        defenceClient.setAllegationList(asSet(allegation));
+        defenceClient.setAllegationList(new HashSet<>(asList(allegation)));
 
         when(defendantOffencesUpdatedEnvelope.payload()).thenReturn(defendantOffencesUpdated);
         when(defendantOffencesUpdatedEnvelope.metadata()).thenReturn(metadata);

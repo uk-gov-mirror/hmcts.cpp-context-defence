@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.defence.event.processor;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -22,8 +22,8 @@ import uk.gov.moj.cpp.progression.json.schema.event.ProsecutionCaseCreated;
 
 import java.util.Objects;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefenceClientMapEventProcessor {

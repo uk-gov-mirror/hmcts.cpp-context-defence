@@ -27,8 +27,8 @@ import uk.gov.moj.cpp.defence.persistence.entity.OrganisationDetails;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
